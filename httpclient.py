@@ -41,13 +41,20 @@ class HTTPClient(object):
         return None
 
     def get_code(self, data):
-        return None
+        data = data.split('\n')
+        data = data[0]
+        data = data.split(' ')
+        code = int(data[1])
+        return code
 
     def get_headers(self,data):
         return None
 
     def get_body(self, data):
-        return None
+        data = data.split('<!')
+        body = data[-1]
+        body = '<!' + body
+        return body
     
     def sendall(self, data):
         self.socket.sendall(data.encode('utf-8'))
@@ -70,6 +77,31 @@ class HTTPClient(object):
     def GET(self, url, args=None):
         code = 500
         body = ""
+        url_list = url.split('/')
+        url_important = url_list[2].split(':')
+        self.connect(url_important[0], int(url_important[-1]))
+        request = "GET / HTTP/1.1\nHost " + url + "\n\n"
+        self.sendall(request)
+        self.socket.shutdown(socket.SHUT_WR)
+        res = self.recvall(self.socket)
+        
+        # close!
+        self.close()
+        print('This is res')
+        print(res)
+        print('this is after res')
+        code = self.get_code(res)
+        body = self.get_body(res)
+        
+        #print('CODE:')
+        ##print(code)
+        #print('BODY:')
+        #print(body)
+
+        # construct a get that is sent to the given url
+        # connect to the host and port and send the request
+        # close the connection, and then read the response
+        # parse the response and then return an HTTP response based on the received response
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
