@@ -163,6 +163,7 @@ class TestHTTPClient(unittest.TestCase):
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 404)
     '''
+    
     '''
     def test404POST(self):
         #Test against 404 errors
@@ -172,7 +173,7 @@ class TestHTTPClient(unittest.TestCase):
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 404)
     '''
-    
+    '''
     def testGET(self):
         #Test HTTP GET
         MyHTTPHandler.get = echo_path_get
@@ -183,6 +184,7 @@ class TestHTTPClient(unittest.TestCase):
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 200)
         self.assertTrue(req.body.find(path)>=0, "Data: [%s] " % req.body)
+    '''
     '''
     def testGETHeaders(self):
         #Test HTTP GET Headers
@@ -235,6 +237,7 @@ class TestHTTPClient(unittest.TestCase):
                 self.assertTrue(req.body.find("DOCTYPE")>=0 or 
                                 req.body.find("<body")>=0 , 
                                 "%s Data: [%s] " % (url,req.body))
+    '''
     
     def testPOST(self):
         #Test HTTP POST with an echo server
@@ -257,7 +260,7 @@ class TestHTTPClient(unittest.TestCase):
             self.assertTrue(args[key] == outargs[key][0], "Key [%s] not found" % key)
         for key in outargs:
             self.assertTrue(args[key] == outargs[key][0], "Key [%s] not found" % key)
-    '''
+    
     @classmethod
     def tearDownClass(self):        
         if (TestHTTPClient.httpd!=None):

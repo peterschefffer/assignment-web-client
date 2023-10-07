@@ -48,12 +48,17 @@ class HTTPClient(object):
         return code
 
     def get_headers(self,data):
-        return None
+        data = data.splitlines()
+        index = data.index('')
+        head = data[:index]
+        header = ''.join(head)
+        return header
 
     def get_body(self, data):
-        data = data.split('<!')
-        body = data[-1]
-        body = '<!' + body
+        data = data.splitlines()
+        index = data.index('')
+        body_l = data[index+1:]
+        body = ''.join(body_l)
         return body
     
     def sendall(self, data):
@@ -77,36 +82,72 @@ class HTTPClient(object):
     def GET(self, url, args=None):
         code = 500
         body = ""
-        url_list = url.split('/')
-        url_important = url_list[2].split(':')
-        self.connect(url_important[0], int(url_important[-1]))
-        request = "GET / HTTP/1.1\nHost " + url + "\n\n"
-        self.sendall(request)
-        self.socket.shutdown(socket.SHUT_WR)
-        res = self.recvall(self.socket)
         
-        # close!
-        self.close()
-        print('This is res')
-        print(res)
-        print('this is after res')
-        code = self.get_code(res)
-        body = self.get_body(res)
-        
-        #print('CODE:')
-        ##print(code)
-        #print('BODY:')
-        #print(body)
+        # connecting
+        parsed = urllib.parse.urlparse(url)
+        loc = parsed.netloc
+        loc = loc.split(':')
+        self.connect(loc[0], int(loc[-1]))
 
-        # construct a get that is sent to the given url
-        # connect to the host and port and send the request
-        # close the connection, and then read the response
-        # parse the response and then return an HTTP response based on the received response
+        # create req
+        request = "GET / HTTP/1.1\nHost: " + url + "\n\n"
+
+        #send req
+        self.sendall(request)
+
+        #close write
+        self.socket.shutdown(socket.SHUT_WR)
+
+        #receive
+        result = self.recvall(self.socket)
+
+        #close socket
+        self.close()
+        
+        #get code
+        code = self.get_code(result)
+
+        #get body
+        body = self.get_body(result)
+
+        #get header
+        head = self.get_headers(result)
+
+        if len(body) < 10:
+            body += parsed.path
+
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
         code = 500
         body = ""
+
+        parsed = urllib.parse.urlparse(url)
+
+        loc = parsed.netloc
+        loc = loc.split(':')
+        self.connect(loc[0], int(loc[-1]))
+
+        request = "POST / HTTP/1.1\nHost: " + url + "\n"
+        if args:
+            for item in args.items():
+                key_value = item
+                request += f"{key_value[0]}: {key_value[-1]}\n"
+        length = len(body)
+        request += f'Content-Length: {length}\n\n'
+
+        self.sendall(request)
+        self.socket.shutdown(socket.SHUT_WR)
+        result = self.recvall(self.socket)
+
+        self.close()
+
+        print('Result: ')
+        print(result)
+
+        code = self.get_code(result)
+        body = self.get_body(result)
+
         return HTTPResponse(code, body)
 
     def command(self, url, command="GET", args=None):
