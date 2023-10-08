@@ -128,13 +128,26 @@ class HTTPClient(object):
         loc = loc.split(':')
         self.connect(loc[0], int(loc[-1]))
 
-        request = "POST / HTTP/1.1\nHost: " + url + "\n"
         if args:
-            for item in args.items():
-                key_value = item
-                request += f"{key_value[0]}: {key_value[-1]}\n"
-        length = len(body)
-        request += f'Content-Length: {length}\n\n'
+            args["Content-Length"] = len(body)
+        else:
+            length = len(body)
+            args = {"Content-Length" : length}
+
+        final_args = str(args)
+        length = len(final_args)
+        request = "POST / HTTP/1.1\nHost: " + url + "\n"
+        request += f'Content-Length: {length}\n'
+        request += final_args
+        request = request.replace("'", '"')
+
+        body = final_args.replace("'", '"')
+        
+        #if args:
+        #    for item in args.items():
+        #        key_value = item
+        #        item_val = urllib.parse.quote(str(key_value[-1]))
+        #        request += f"{key_value[0]}: {item_val}\n"
 
         self.sendall(request)
         self.socket.shutdown(socket.SHUT_WR)
@@ -142,11 +155,11 @@ class HTTPClient(object):
 
         self.close()
 
-        print('Result: ')
-        print(result)
-
+        #print('Result: ')
+        #print(result)
+    
         code = self.get_code(result)
-        body = self.get_body(result)
+        #body = self.get_body(result)
 
         return HTTPResponse(code, body)
 

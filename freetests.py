@@ -84,7 +84,7 @@ def echo_post(self):
     self.end_headers()
     self.wfile.write(bytes(json.dumps(post_data),"utf-8"))
 
-def header_check(self):
+def header_check(self): 
     response = 200
     errors = []
     if 'Host' not in self.headers:
@@ -164,7 +164,7 @@ class TestHTTPClient(unittest.TestCase):
         self.assertTrue(req.code == 404)
     '''
     
-    '''
+    
     def test404POST(self):
         #Test against 404 errors
         MyHTTPHandler.post = nothing_available
@@ -172,7 +172,7 @@ class TestHTTPClient(unittest.TestCase):
         req = http.POST("http://%s:%d/49872398432" % (BASEHOST,BASEPORT) )
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 404)
-    '''
+    
     '''
     def testGET(self):
         #Test HTTP GET
@@ -197,7 +197,7 @@ class TestHTTPClient(unittest.TestCase):
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 200)
     '''
-    '''
+    
     def testPOSTHeaders(self):
         #Test HTTP POST Headers
         MyHTTPHandler.post = post_header_check
@@ -208,7 +208,7 @@ class TestHTTPClient(unittest.TestCase):
         req = http.POST( url )
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 200,"Code is %s but I wanted a 200 OK" % req.code)
-    '''
+    
         
     '''
     # consider disabling this test until everything else works
@@ -256,7 +256,12 @@ class TestHTTPClient(unittest.TestCase):
         print("Test Post Body: [%s]" % req.body)
         outargs = json.loads(req.body)
         print(outargs.__class__)
+        print('outargs:')
+        print(outargs)
+        print('args:')
+        print(args)
         for key in args:
+            print(outargs[key] == args[key])
             self.assertTrue(args[key] == outargs[key][0], "Key [%s] not found" % key)
         for key in outargs:
             self.assertTrue(args[key] == outargs[key][0], "Key [%s] not found" % key)
