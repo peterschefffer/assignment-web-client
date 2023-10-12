@@ -85,25 +85,37 @@ class HTTPClient(object):
         
         # connecting
         parsed = urllib.parse.urlparse(url)
-        loc = parsed.netloc
-        loc = loc.split(':')
-        self.connect(loc[0], int(loc[-1]))
+        host = parsed.hostname
+        port = parsed.port
+
+        if not port:
+            port = 80
+        path = parsed.path
+        
+        self.connect(host, port)        
+        
+        if path == "":
+            path = '/'
 
         # create req
-        request = "GET / HTTP/1.1\nHost: " + url + "\n\n"
+        request = f"GET {path} HTTP/1.1\r\nHost: {host}\r\n"
+        request += "Connection: close\r\n\r\n"
+
+        #print(request)
 
         #send req
         self.sendall(request)
 
         #close write
-        self.socket.shutdown(socket.SHUT_WR)
+        #self.socket.shutdown(socket.SHUT_WR)
 
         #receive
         result = self.recvall(self.socket)
 
         #close socket
         self.close()
-        
+        print(result)
+
         #get code
         code = self.get_code(result)
 
@@ -125,41 +137,33 @@ class HTTPClient(object):
         parsed = urllib.parse.urlparse(url)
 
         loc = parsed.netloc
-        loc = loc.split(':')
-        self.connect(loc[0], int(loc[-1]))
+        port = parsed.port
+        host = parsed.hostname
+        path = parsed.path
+        #loc = loc.split(':')
+        self.connect(host, port)
+
+        final_args = args
 
         if args:
-            args["Content-Length"] = len(body)
+            final_args = urllib.parse.urlencode(final_args)
         else:
-            length = len(body)
-            args = {"Content-Length" : length}
-
-        final_args = str(args)
+            final_args = ""
+            
         length = len(final_args)
-        request = "POST / HTTP/1.1\nHost: " + url + "\n"
-        request += f'Content-Length: {length}\n'
+        request = f"POST {path} HTTP/1.1\nHost: {host}\n"
+        request += "Content-Type: application/x-www-form-urlencoded\n"
+        request += f'Content-Length: {length}\n\n'
         request += final_args
-        request = request.replace("'", '"')
-
-        body = final_args.replace("'", '"')
-        
-        #if args:
-        #    for item in args.items():
-        #        key_value = item
-        #        item_val = urllib.parse.quote(str(key_value[-1]))
-        #        request += f"{key_value[0]}: {item_val}\n"
 
         self.sendall(request)
         self.socket.shutdown(socket.SHUT_WR)
         result = self.recvall(self.socket)
-
+        print(result)
         self.close()
-
-        #print('Result: ')
-        #print(result)
     
         code = self.get_code(result)
-        #body = self.get_body(result)
+        body = self.get_body(result)
 
         return HTTPResponse(code, body)
 
